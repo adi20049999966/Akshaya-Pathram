@@ -1,0 +1,1735 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Akshaya Patram - Zero Food Waste Mobile Application</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            display: ['"Outfit"', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              orange: '#EE6F2D',
+              orangeDark: '#D65818',
+              orangeLight: '#FFA05B',
+              orangeGradFrom: '#F6964E',
+              orangeGradTo: '#EE6726',
+              teal: '#217B85',
+              tealDark: '#175C64',
+              tealLight: '#3AA5B0',
+              tealGradFrom: '#29838E',
+              tealGradTo: '#1C5F67',
+              dark: '#0F172A',
+              slate: '#1E293B'
+            }
+          },
+          boxShadow: {
+            'phone': '0 25px 70px -15px rgba(0, 0, 0, 0.4), 0 0 0 12px #0f172a, 0 0 0 14px #334155',
+            'btn-orange': '0 8px 24px -4px rgba(238, 111, 45, 0.45)',
+            'btn-teal': '0 8px 24px -4px rgba(33, 123, 133, 0.45)',
+            'pin': '0 6px 16px -2px rgba(0,0,0,0.18)'
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    /* Smooth Scroll & iOS Look */
+    * {
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+    input, textarea {
+      user-select: text;
+    }
+    ::-webkit-scrollbar {
+      width: 4px;
+      height: 4px;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 9999px;
+    }
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+
+    /* Radar Pulse Animation */
+    @keyframes pulse-ring {
+      0% { transform: scale(0.9); opacity: 0.85; }
+      100% { transform: scale(2.4); opacity: 0; }
+    }
+    .pulse-ring::before {
+      content: '';
+      position: absolute;
+      inset: -6px;
+      border-radius: 9999px;
+      background: currentColor;
+      animation: pulse-ring 2s cubic-bezier(0.2, 0.6, 0.35, 1) infinite;
+    }
+
+    /* Screen Slide Animations */
+    .screen-view {
+      transition: opacity 0.25s ease, transform 0.25s ease;
+    }
+    .screen-hidden {
+      display: none !important;
+      opacity: 0;
+      transform: translateY(8px);
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 antialiased min-h-screen font-sans flex flex-col items-center justify-start p-2 sm:p-6 lg:p-8">
+
+  <!-- TOP SHOWCASE CONTROL BAR -->
+  <header class="w-full max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 mb-6 text-white pb-4 border-b border-slate-800">
+    <div class="flex items-center gap-3">
+      <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-brand-orange to-brand-teal flex items-center justify-center shadow-lg shadow-orange-500/20">
+        <!-- Akshaya Patram Pot Icon -->
+        <svg class="w-6 h-6 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M4 10h16M7 10c0 5 2.5 8 5 8s5-3 5-8M9 6h6M10 3h4" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div>
+        <div class="flex items-center gap-2">
+          <h1 class="text-xl font-bold font-display tracking-tight text-white">Akshaya Patram</h1>
+          <span id="backend-status-pill" class="px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center gap-1.5">
+            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span id="backend-status-text">Backend Connected (:5000)</span>
+          </span>
+        </div>
+        <p class="text-xs text-slate-400">Full-Stack Solution • Express REST API + JSON Database + Live Frontend</p>
+      </div>
+    </div>
+
+    <!-- Screen Navigator Pills -->
+    <div class="flex items-center flex-wrap gap-1 bg-slate-900/90 p-1.5 rounded-2xl border border-slate-800 shadow-inner">
+      <button onclick="navigateTo('onboarding')" id="tab-nav-onboarding" class="nav-tab px-3 py-1.5 rounded-xl text-xs font-semibold transition-all bg-brand-orange text-white shadow">
+        1. Onboarding
+      </button>
+      <button onclick="navigateTo('dashboard')" id="tab-nav-dashboard" class="nav-tab px-3 py-1.5 rounded-xl text-xs font-semibold transition-all text-slate-400 hover:text-white">
+        2. Dashboard
+      </button>
+      <button onclick="navigateTo('detail')" id="tab-nav-detail" class="nav-tab px-3 py-1.5 rounded-xl text-xs font-semibold transition-all text-slate-400 hover:text-white">
+        3. Meal Detail
+      </button>
+      <button onclick="navigateTo('confirmation')" id="tab-nav-confirmation" class="nav-tab px-3 py-1.5 rounded-xl text-xs font-semibold transition-all text-slate-400 hover:text-white">
+        4. Confirmation
+      </button>
+      <div class="w-px h-5 bg-slate-800 mx-1"></div>
+      <button onclick="openDonorModal()" class="px-2.5 py-1.5 rounded-xl text-xs font-semibold text-amber-400 hover:bg-slate-800 transition-all flex items-center gap-1">
+        <span>+ Post Food</span>
+      </button>
+      <button onclick="toggleSideBySide()" id="btn-sidebyside" class="px-2.5 py-1.5 rounded-xl text-xs font-semibold text-brand-tealLight hover:bg-slate-800 transition-all">
+        Side-by-Side
+      </button>
+    </div>
+  </header>
+
+  <!-- MAIN APP CONTAINER -->
+  <main class="w-full flex justify-center items-center relative">
+    
+    <!-- SINGLE INTERACTIVE SMARTPHONE SHELL -->
+    <div id="phone-frame" class="relative w-[390px] h-[844px] bg-white text-slate-900 rounded-[50px] shadow-phone overflow-hidden border-[8px] border-slate-950 transition-all select-none flex flex-col">
+      
+      <!-- iPhone 16 Pro Dynamic Island -->
+      <div class="absolute top-2.5 left-1/2 -translate-x-1/2 w-28 h-7 bg-black rounded-full z-50 flex items-center justify-between px-2.5 pointer-events-none shadow-md">
+        <div class="w-2.5 h-2.5 rounded-full bg-slate-900/90 border border-slate-800"></div>
+        <div class="w-2 h-2 rounded-full bg-slate-900/90"></div>
+      </div>
+
+      <!-- iOS Status Bar (Live Clock) -->
+      <div class="absolute top-0 inset-x-0 h-11 px-7 flex items-center justify-between text-xs font-semibold z-40 text-slate-800 pointer-events-none">
+        <span id="live-phone-time" class="tracking-tight text-[13px] font-bold">10:09</span>
+        <div class="flex items-center gap-1.5 text-slate-800">
+          <!-- Signal Icon -->
+          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><rect x="2" y="16" width="3" height="6" rx="1"/><rect x="7" y="12" width="3" height="10" rx="1"/><rect x="12" y="8" width="3" height="14" rx="1"/><rect x="17" y="4" width="3" height="18" rx="1"/></svg>
+          <!-- Wifi -->
+          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 18a2 2 0 100 4 2 2 0 000-4zm-4.9-3.2a7 7 0 019.8 0l1.4-1.4a9 9 0 00-12.6 0l1.4 1.4zm-2.8-2.8a11 11 0 0115.4 0l1.4-1.4a13 13 0 00-18.2 0l1.4 1.4z"/></svg>
+          <!-- Battery -->
+          <div class="w-5 h-2.5 border border-slate-800 rounded-xs p-0.5 flex items-center"><div class="w-full h-full bg-slate-800 rounded-2xs"></div></div>
+        </div>
+      </div>
+
+      <!-- APP CONTENT PAGES WRAPPER -->
+      <div class="relative w-full h-full flex-1 flex flex-col overflow-hidden bg-white">
+        
+        <!-- ============================================== -->
+        <!-- SCREEN 1: ONBOARDING SCREEN                    -->
+        <!-- ============================================== -->
+        <section id="screen-onboarding" class="screen-view absolute inset-0 pt-12 pb-8 px-6 flex flex-col justify-between bg-white overflow-y-auto">
+          
+          <!-- Logo & Brand Header -->
+          <div class="flex flex-col items-center mt-10">
+            <!-- Akshaya Vessel Illustration matching Photo 1 -->
+            <div class="w-20 h-20 rounded-2xl bg-amber-50 border border-amber-200/90 flex items-center justify-center p-3 shadow-inner mb-2.5">
+              <svg viewBox="0 0 64 64" class="w-14 h-14">
+                <rect x="14" y="24" width="36" height="26" rx="6" fill="#D97706" />
+                <rect x="16" y="26" width="32" height="22" rx="4" fill="#F59E0B" />
+                <path d="M10 24C10 21 16 18 32 18C48 18 54 21 54 24H10Z" fill="#B45309"/>
+                <rect x="26" y="12" width="12" height="6" rx="3" fill="#D97706" />
+                <path d="M28 8Q30 4 32 8" stroke="#FBBF24" stroke-width="2" stroke-linecap="round" fill="none"/>
+                <path d="M34 9Q36 5 38 9" stroke="#FBBF24" stroke-width="2" stroke-linecap="round" fill="none"/>
+              </svg>
+            </div>
+            <span class="text-xs font-bold tracking-wider text-slate-600 font-display uppercase">Akshaya Patram</span>
+            <h2 class="text-2xl font-extrabold text-slate-900 mt-4 text-center font-display tracking-tight leading-snug">
+              Welcome to<br/>Akshaya Patram
+            </h2>
+            <p class="text-xs text-slate-500 mt-2 text-center max-w-[250px] leading-relaxed">
+              Rescuing fresh surplus food & nourishing communities across Bengaluru in real time.
+            </p>
+          </div>
+
+          <!-- Role Cards matching Photo 1 -->
+          <div class="space-y-4 my-auto">
+            <!-- Option 1: Donor Card (Warm Orange Gradient) -->
+            <div onclick="handleRoleChoice('donor')" class="group relative overflow-hidden rounded-2xl p-4 bg-gradient-to-r from-brand-orangeGradFrom to-brand-orangeGradTo text-white shadow-md shadow-orange-500/25 cursor-pointer transform transition-all active:scale-[0.98] hover:shadow-lg">
+              <div class="flex items-center gap-4">
+                <!-- Chef Hat Icon -->
+                <div class="w-12 h-12 shrink-0 p-2 rounded-xl bg-white/20 backdrop-blur-xs flex items-center justify-center border border-white/30">
+                  <svg class="w-7 h-7 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                    <path d="M6 13.8V8a4 4 0 0 1 8 0v5.8" stroke-linecap="round"/>
+                    <path d="M14 6.5a3.5 3.5 0 1 1 5 3.3 2.5 2.5 0 0 1-2 2.4" stroke-linecap="round"/>
+                    <path d="M10 6.5a3.5 3.5 0 1 0-5 3.3 2.5 2.5 0 0 0 2 2.4" stroke-linecap="round"/>
+                    <path d="M5 14h14a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-2a1 1 0 0 1 1-1z"/>
+                    <path d="M12 10.5c-.7-.9-2.3-.6-2.3.9 0 1.2 2.3 2.6 2.3 2.6s2.3-1.4 2.3-2.6c0-1.5-1.6-1.8-2.3-.9z" fill="white"/>
+                  </svg>
+                </div>
+                <div>
+                  <h3 class="font-bold text-base leading-tight">I'm a DONOR</h3>
+                  <p class="text-xs text-orange-100 font-medium opacity-90">(Donate Food)</p>
+                  <p class="text-[11px] text-white/90 mt-0.5 leading-tight">Share surplus food from your home/kitchen.</p>
+                </div>
+              </div>
+              <div class="absolute right-3.5 top-1/2 -translate-y-1/2 text-white/70">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+              </div>
+            </div>
+
+            <!-- Option 2: Recipient Card (Deep Teal Gradient) -->
+            <div onclick="handleRoleChoice('recipient')" class="group relative overflow-hidden rounded-2xl p-4 bg-gradient-to-r from-brand-tealGradFrom to-brand-tealGradTo text-white shadow-md shadow-teal-700/25 cursor-pointer transform transition-all active:scale-[0.98] hover:shadow-lg">
+              <div class="flex items-center gap-4">
+                <!-- Serving Dish Icon -->
+                <div class="w-12 h-12 shrink-0 p-2 rounded-xl bg-white/20 backdrop-blur-xs flex items-center justify-center border border-white/30">
+                  <svg class="w-7 h-7 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                    <path d="M12 3a9 9 0 0 0-9 9h18a9 9 0 0 0-9-9z" stroke-linecap="round"/>
+                    <path d="M2 15h20" stroke-linecap="round"/>
+                    <path d="M4 18c2 3 6 4 8 4s6-1 8-4" stroke-linecap="round"/>
+                    <circle cx="12" cy="2" r="1" fill="white"/>
+                  </svg>
+                </div>
+                <div>
+                  <h3 class="font-bold text-base leading-tight">I'm a RECIPIENT</h3>
+                  <p class="text-xs text-teal-100 font-medium opacity-90">(Request Food)</p>
+                  <p class="text-[11px] text-white/90 mt-0.5 leading-tight">Find available meals for distribution/pickup.</p>
+                </div>
+              </div>
+              <div class="absolute right-3.5 top-1/2 -translate-y-1/2 text-white/70">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bottom Auth Links matching Photo 1 -->
+          <div class="flex flex-col items-center gap-2 pt-2">
+            <button onclick="openAuthModal('signin')" class="text-sm font-bold text-slate-800 hover:text-brand-orange underline underline-offset-4 transition-colors">
+              Sign In
+            </button>
+            <button onclick="openAuthModal('signup')" class="text-xs font-semibold text-slate-500 hover:text-brand-teal underline underline-offset-4 transition-colors">
+              Create Account
+            </button>
+          </div>
+        </section>
+
+        <!-- ============================================== -->
+        <!-- SCREEN 2: HOME DASHBOARD (RECIPIENT / MAP)     -->
+        <!-- ============================================== -->
+        <section id="screen-dashboard" class="screen-view screen-hidden absolute inset-0 pt-11 pb-16 flex flex-col bg-slate-50 overflow-hidden">
+          
+          <!-- Search & Filter Bar matching Photo 2 -->
+          <div class="p-3.5 bg-white/95 backdrop-blur-md shadow-xs border-b border-slate-100 z-20">
+            <div class="relative flex items-center bg-slate-100/90 rounded-2xl px-3 py-2 border border-slate-200">
+              <input type="text" id="map-search-input" onkeyup="handleSearchInput(event)" placeholder="Search Location (e.g., Koramangala, Bengaluru)" 
+                     value="HSR Layout, Bengaluru"
+                     class="w-full bg-transparent text-xs font-semibold text-slate-800 placeholder-slate-400 focus:outline-none pr-8">
+              <button onclick="applySearchFilter()" class="text-slate-500 hover:text-brand-teal p-1">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+              </button>
+              <button onclick="openFilterModal()" class="ml-1.5 pl-2 border-l border-slate-300 text-slate-600 hover:text-brand-teal p-1" title="Filter meals">
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/></svg>
+              </button>
+            </div>
+
+            <!-- View Segment & Recenter GPS Button matching Photo 2 -->
+            <div class="flex items-center justify-between mt-2.5">
+              <div class="inline-flex p-0.5 rounded-full bg-slate-200 text-[11px] font-semibold">
+                <button id="btn-view-map" onclick="toggleMapList('map')" class="px-3.5 py-1 rounded-full bg-slate-800 text-white shadow-xs transition-all">MAP VIEW</button>
+                <button id="btn-view-list" onclick="toggleMapList('list')" class="px-3.5 py-1 rounded-full text-slate-600 hover:text-slate-900 transition-all">LIST VIEW</button>
+              </div>
+
+              <!-- Recenter GPS button -->
+              <button onclick="recenterGPS()" class="w-8 h-8 rounded-full bg-white border border-slate-200 shadow-sm flex items-center justify-center text-slate-700 hover:text-brand-teal active:scale-95 transition-all" title="Current Location">
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="9"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- MAP CONTAINER (Interactive SVG / Canvas Map) -->
+          <div id="dashboard-map-container" class="relative flex-1 bg-[#E8EEF3] overflow-hidden select-none">
+            
+            <!-- Map Vector Base Canvas & Streets -->
+            <svg id="svg-map" class="w-full h-full object-cover" viewBox="0 0 390 560" fill="none">
+              <!-- Water body: Bellandur / Agara lake -->
+              <path d="M -20 140 C 60 110, 90 200, 75 290 C 65 350, 20 400, -20 390 Z" fill="#D3E5F3"/>
+              <!-- Green areas -->
+              <rect x="230" y="30" width="140" height="90" rx="14" fill="#D5E8D4" opacity="0.85"/>
+              <path d="M 160 430 Q 210 410 250 470 T 330 490 L 360 560 L 130 560 Z" fill="#D5E8D4" opacity="0.85"/>
+              <!-- Major Avenues & Ring Roads -->
+              <line x1="0" y1="210" x2="390" y2="280" stroke="#FFFFFF" stroke-width="14"/>
+              <line x1="0" y1="210" x2="390" y2="280" stroke="#CBD5E1" stroke-width="9"/>
+              <line x1="160" y1="0" x2="210" y2="560" stroke="#FFFFFF" stroke-width="16"/>
+              <line x1="160" y1="0" x2="210" y2="560" stroke="#CBD5E1" stroke-width="11"/>
+              <!-- Secondary streets -->
+              <line x1="20" y1="90" x2="370" y2="130" stroke="#FFFFFF" stroke-width="7"/>
+              <line x1="20" y1="90" x2="370" y2="130" stroke="#E2E8F0" stroke-width="5"/>
+              <line x1="30" y1="390" x2="380" y2="370" stroke="#FFFFFF" stroke-width="8"/>
+              <line x1="30" y1="390" x2="380" y2="370" stroke="#E2E8F0" stroke-width="6"/>
+              <line x1="70" y1="0" x2="110" y2="560" stroke="#FFFFFF" stroke-width="7"/>
+              <line x1="280" y1="0" x2="320" y2="560" stroke="#FFFFFF" stroke-width="7"/>
+              <!-- Locality Watermark Labels -->
+              <text x="250" y="80" fill="#94A3B8" font-size="9" font-family="sans-serif" font-weight="700">KORAMANGALA</text>
+              <text x="50" y="330" fill="#94A3B8" font-size="9" font-family="sans-serif" font-weight="700">HSR LAYOUT</text>
+              <text x="200" y="520" fill="#94A3B8" font-size="9" font-family="sans-serif" font-weight="700">BTM 2ND STAGE</text>
+              <text x="20" y="540" fill="#64748B" font-size="10" font-family="sans-serif" font-weight="bold">Google</text>
+            </svg>
+
+            <!-- Dynamic GPS User Location Pulse -->
+            <div id="gps-user-marker" class="absolute top-[320px] left-[180px] -translate-x-1/2 -translate-y-1/2 pointer-events-none z-10 transition-all duration-700">
+              <div class="w-6 h-6 rounded-full bg-blue-500/20 text-blue-600 flex items-center justify-center pulse-ring">
+                <div class="w-3.5 h-3.5 bg-blue-600 border-2 border-white rounded-full shadow-md"></div>
+              </div>
+            </div>
+
+            <!-- DYNAMIC INTERACTIVE PINS INJECTED HERE -->
+            <div id="pins-container" class="absolute inset-0 pointer-events-auto">
+              <!-- Pins populated via JavaScript -->
+            </div>
+
+            <!-- Floating Action Badges matching Photo 2 -->
+            <div class="absolute bottom-3 right-3 flex items-center gap-2 z-30">
+              <!-- Food basket notification toggle button -->
+              <button onclick="openNotificationDrawer()" class="relative w-10 h-10 rounded-full bg-white border border-slate-200 shadow-md flex items-center justify-center hover:bg-slate-50 active:scale-95 transition-all">
+                <svg class="w-5 h-5 text-amber-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 10h16M7 10c0 5 2.5 8 5 8s5-3 5-8M9 6h6"/></svg>
+                <span id="unread-badge-count" class="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center">2</span>
+              </button>
+              <!-- "Nearby" Pill Filter button matching Photo 2 -->
+              <button onclick="triggerNearbyFilter()" class="px-3.5 py-2 rounded-full bg-brand-teal text-white shadow-btn-teal flex items-center gap-1.5 text-xs font-bold hover:bg-brand-tealDark active:scale-95 transition-all">
+                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2L19 21L12 17L5 21L12 2Z"/></svg>
+                Nearby
+              </button>
+            </div>
+          </div>
+
+          <!-- LIST VIEW (Alternative to Map View) -->
+          <div id="dashboard-list-container" class="hidden flex-1 overflow-y-auto p-4 space-y-3 bg-slate-50">
+            <div class="flex items-center justify-between text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">
+              <span>Available Surplus Meals</span>
+              <span id="list-total-count" class="text-brand-orange font-bold">4 Verified Listings</span>
+            </div>
+            <div id="meals-list-cards" class="space-y-3">
+              <!-- Dynamic meal cards injected via JS -->
+            </div>
+          </div>
+
+          <!-- Bottom Navigation Bar matching Photo 2 -->
+          <nav class="absolute bottom-0 inset-x-0 h-16 bg-white border-t border-slate-200/90 px-6 flex items-center justify-between z-30">
+            <!-- Home tab (Active) -->
+            <button onclick="navigateTo('dashboard')" id="nav-btn-home" class="flex flex-col items-center gap-0.5 text-brand-orange">
+              <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.1L1 12h3v9h6v-6h4v6h6v-9h3L12 2.1z"/></svg>
+              <span class="text-[10px] font-bold">Home</span>
+            </button>
+            <!-- My Requests tab -->
+            <button onclick="openMyRequestsDrawer()" id="nav-btn-requests" class="flex flex-col items-center gap-0.5 text-slate-400 hover:text-slate-700 transition-colors">
+              <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
+              <span class="text-[10px] font-medium">My Requests</span>
+            </button>
+            <!-- Notifications tab -->
+            <button onclick="openNotificationDrawer()" id="nav-btn-notifs" class="flex flex-col items-center gap-0.5 text-slate-400 hover:text-slate-700 transition-colors relative">
+              <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+              <span class="text-[10px] font-medium">Notifications</span>
+            </button>
+            <!-- Profile tab -->
+            <button onclick="openProfileDrawer()" id="nav-btn-profile" class="flex flex-col items-center gap-0.5 text-slate-400 hover:text-slate-700 transition-colors">
+              <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              <span class="text-[10px] font-medium">Profile</span>
+            </button>
+          </nav>
+        </section>
+
+        <!-- ============================================== -->
+        <!-- SCREEN 3: FOOD DETAIL SCREEN                   -->
+        <!-- ============================================== -->
+        <section id="screen-detail" class="screen-view screen-hidden absolute inset-0 pt-11 pb-5 px-4 flex flex-col justify-between bg-white overflow-y-auto">
+          <div>
+            <!-- Header with Back Arrow & Title matching Photo 3 -->
+            <div class="flex items-center justify-between pb-2.5 border-b border-slate-100">
+              <button onclick="navigateTo('dashboard')" class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-700 hover:bg-slate-200 active:scale-95 transition-all">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M15 19l-7-7 7-7"/></svg>
+              </button>
+              <h3 class="text-base font-bold text-slate-800">Meal Details</h3>
+              <button onclick="shareMealListing()" class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-700 hover:bg-slate-200">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/></svg>
+              </button>
+            </div>
+
+            <!-- User Rating Bar matching Photo 3 -->
+            <div class="flex items-center justify-between py-2.5">
+              <span class="text-xs font-semibold text-slate-600">User Rating</span>
+              <button onclick="openDonorReviews()" class="flex items-center gap-1 group">
+                <span id="detail-donor-rating" class="text-xs font-bold text-slate-900">4.7</span>
+                <svg class="w-3.5 h-3.5 text-amber-500 fill-amber-500" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <span class="text-[11px] text-slate-400 group-hover:text-brand-orange underline ml-0.5">(28 reviews)</span>
+              </button>
+            </div>
+
+            <!-- Food Photography Hero matching Photo 3 -->
+            <div class="relative w-full h-44 rounded-2xl overflow-hidden bg-slate-100 border border-slate-200 shadow-inner group">
+              <img id="detail-image" src="https://images.unsplash.com/photo-1546833999-b9f581a1996d?auto=format&fit=crop&w=800&q=80" 
+                   alt="Meal Preview" 
+                   class="w-full h-full object-cover">
+              <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
+              
+              <!-- FSSAI Certified Tag -->
+              <div class="absolute top-3 left-3 px-2 py-0.5 rounded-full bg-emerald-600/90 text-white text-[10px] font-bold tracking-wide backdrop-blur-xs flex items-center gap-1 shadow">
+                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+                FSSAI Certified Fresh
+              </div>
+
+              <div class="absolute bottom-2.5 left-3 text-white flex items-center gap-2">
+                <span class="text-[11px] font-medium bg-black/40 px-2 py-0.5 rounded backdrop-blur-xs">Cooked warm today • Packed clean</span>
+              </div>
+            </div>
+
+            <!-- Meal Specs & Details matching Photo 3 -->
+            <div class="mt-3.5 space-y-3">
+              <div>
+                <div class="flex items-baseline justify-between">
+                  <h2 id="detail-title-meals" class="text-xl font-extrabold text-slate-900 font-display">8 Meals</h2>
+                  <span id="detail-status-pill" class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-200">Available Now</span>
+                </div>
+                <p id="detail-dish-title" class="text-sm font-semibold text-slate-700 mt-0.5">Vegetable Rice & Lentils</p>
+              </div>
+
+              <!-- Quantity & Dietary Info Box matching Photo 3 -->
+              <div class="text-xs text-slate-700 space-y-1.5 bg-slate-50 p-3 rounded-xl border border-slate-200/80">
+                <div class="flex items-center gap-1.5">
+                  <span class="font-bold text-slate-900">Quantity:</span>
+                  <span id="detail-quantity-desc">8 Servings (Estimated 6kg)</span>
+                </div>
+                <div class="flex items-center gap-1.5">
+                  <span class="font-bold text-slate-900">Dietary Info:</span>
+                  <span id="detail-dietary-desc" class="text-brand-teal font-semibold">Veg, Nut-Free, Low Spice</span>
+                </div>
+              </div>
+
+              <!-- Pickup Window & Address matching Photo 3 -->
+              <div class="space-y-2 text-xs">
+                <div class="border-t border-slate-100 pt-2 flex items-start justify-between">
+                  <div>
+                    <div class="font-bold text-slate-800">Pickup window</div>
+                    <div id="detail-pickup-window" class="text-slate-600 flex items-center gap-1 mt-0.5">
+                      <svg class="w-3.5 h-3.5 text-brand-orange" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                      <span>2:00 PM - 5:00 PM Today</span>
+                    </div>
+                  </div>
+                  <!-- Live countdown ticker -->
+                  <span class="text-[10px] font-mono font-bold bg-orange-100 text-brand-orange px-2 py-0.5 rounded-full">
+                    ⏱️ <span id="detail-countdown">2h 45m left</span>
+                  </span>
+                </div>
+
+                <div class="border-t border-slate-100 pt-2 flex items-start justify-between">
+                  <div>
+                    <div class="font-bold text-slate-800">Address</div>
+                    <div id="detail-address" class="text-slate-600 flex items-center gap-1 mt-0.5">
+                      <svg class="w-3.5 h-3.5 text-brand-teal" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                      <span>456, HSR Layout, Bengaluru</span>
+                    </div>
+                  </div>
+                  <button onclick="copyAddressToClipboard()" class="text-[10px] text-brand-teal font-semibold hover:underline mt-0.5">Copy</button>
+                </div>
+              </div>
+
+              <!-- Donor Information Card matching Photo 3 -->
+              <div class="flex items-center justify-between border-t border-slate-100 pt-2.5">
+                <div class="flex items-center gap-2.5">
+                  <div class="w-9 h-9 rounded-full overflow-hidden bg-slate-200 border border-slate-300">
+                    <img id="detail-donor-avatar" src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=150&q=80" alt="Donor avatar" class="w-full h-full object-cover">
+                  </div>
+                  <div>
+                    <h5 id="detail-donor-name" class="text-xs font-bold text-slate-900 leading-tight">Donor (Aisha Khan)</h5>
+                    <p class="text-[10px] text-emerald-600 font-semibold flex items-center gap-0.5">
+                      <svg class="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+                      Verified Kitchen • 48 donations
+                    </p>
+                  </div>
+                </div>
+                <!-- Safety Rules Trigger Modal -->
+                <button onclick="openSafetyModal()" class="text-[11px] font-bold text-brand-teal hover:text-brand-tealDark underline">
+                  Safety Rules
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bottom Action Buttons matching Photo 3 -->
+          <div class="grid grid-cols-2 gap-3 pt-3 mt-1 border-t border-slate-100">
+            <!-- Get Directions Button (Deep Teal) -->
+            <button onclick="launchDirectionsMode()" class="w-full py-2.5 px-3 rounded-full bg-brand-teal text-white font-bold text-xs shadow-btn-teal flex items-center justify-center gap-1.5 active:scale-95 transition-all hover:bg-brand-tealDark">
+              <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2L19 21L12 17L5 21L12 2Z"/></svg>
+              Get Directions
+            </button>
+
+            <!-- Accept Pickup Button (Warm Saffron Orange) -->
+            <button onclick="executePickupAcceptance()" class="w-full py-2.5 px-3 rounded-full bg-brand-orange text-white font-bold text-xs shadow-btn-orange flex items-center justify-center gap-1.5 active:scale-95 transition-all hover:bg-brand-orangeDark">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+              Accept Pickup
+            </button>
+          </div>
+        </section>
+
+        <!-- ============================================== -->
+        <!-- SCREEN 4: CONFIRMATION & FEEDBACK SCREEN       -->
+        <!-- ============================================== -->
+        <section id="screen-confirmation" class="screen-view screen-hidden absolute inset-0 pt-12 pb-5 px-5 flex flex-col justify-between bg-white overflow-y-auto">
+          <div>
+            <!-- Big Success Checkmark matching Photo 4 -->
+            <div class="flex flex-col items-center text-center mt-1">
+              <div class="w-14 h-14 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mb-2 shadow-sm animate-bounce duration-700">
+                <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+              </div>
+              <h2 class="text-xl font-extrabold text-slate-900 font-display">Pickup Confirmed!</h2>
+              <p id="confirm-hero-text" class="text-xs text-slate-600 mt-1 max-w-[270px]">
+                You have accepted the donation from <strong class="text-slate-800">Akshaya Kitchen (Aisha Khan)</strong>.
+              </p>
+            </div>
+
+            <!-- Order ID Card matching Photo 4 -->
+            <div class="mt-4 p-3.5 rounded-2xl bg-slate-100/90 border border-slate-200/90 space-y-1.5 text-xs shadow-xs">
+              <div class="flex items-center justify-between">
+                <span class="font-bold text-slate-800">Order ID:</span>
+                <span id="confirm-order-id" class="font-mono font-bold text-brand-orange">#AP987654</span>
+              </div>
+              <div class="flex items-center justify-between">
+                <span class="font-semibold text-slate-600">Item:</span>
+                <span id="confirm-item-name" class="font-bold text-slate-900">Vegetable Rice & Lentils</span>
+              </div>
+              <div class="flex items-center justify-between">
+                <span class="font-semibold text-slate-600">Quantity:</span>
+                <span id="confirm-quantity" class="font-bold text-slate-900">8 Meals (Estimated 6kg)</span>
+              </div>
+            </div>
+
+            <!-- Inventory Notice Banner matching Photo 4 -->
+            <div class="mt-3 p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs flex items-start gap-2 shadow-xs">
+              <svg class="w-4 h-4 text-amber-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              <div>
+                <strong>Inventory updated.</strong>
+                <p class="text-[11px] text-amber-800 mt-0.5">Please reach the location within the time slot (<span id="confirm-slot-time">2:00 PM - 5:00 PM</span>).</p>
+              </div>
+            </div>
+
+            <!-- Feedback & Rating Prompt matching Photo 4 -->
+            <div class="mt-4 pt-3 border-t border-slate-100">
+              <h4 class="text-sm font-bold text-slate-900">How was your experience?</h4>
+              <p id="confirm-rate-heading" class="text-xs text-slate-500 mt-0.5">Rate Akshaya Kitchen</p>
+
+              <!-- Interactive 5-Star Rating Buttons -->
+              <div class="flex items-center gap-1.5 my-2.5" id="rating-stars-bar">
+                <button onclick="handleStarSelect(1)" class="star-pill text-2xl text-amber-400 hover:scale-125 transition-transform" data-val="1">★</button>
+                <button onclick="handleStarSelect(2)" class="star-pill text-2xl text-amber-400 hover:scale-125 transition-transform" data-val="2">★</button>
+                <button onclick="handleStarSelect(3)" class="star-pill text-2xl text-amber-400 hover:scale-125 transition-transform" data-val="3">★</button>
+                <button onclick="handleStarSelect(4)" class="star-pill text-2xl text-amber-400 hover:scale-125 transition-transform" data-val="4">★</button>
+                <button onclick="handleStarSelect(5)" class="star-pill text-2xl text-amber-400 hover:scale-125 transition-transform" data-val="5">★</button>
+                <span id="rating-sentiment-text" class="text-xs font-bold text-amber-600 ml-2">Excellent (5.0)</span>
+              </div>
+
+              <!-- Quick Feedback Chips -->
+              <div class="flex flex-wrap gap-1.5 mb-2">
+                <button onclick="toggleFeedbackChip(this)" class="feedback-tag px-2 py-0.5 rounded-full text-[10px] bg-slate-100 text-slate-600 border border-slate-200 transition-all font-medium">+ Fresh & Warm</button>
+                <button onclick="toggleFeedbackChip(this)" class="feedback-tag px-2 py-0.5 rounded-full text-[10px] bg-slate-100 text-slate-600 border border-slate-200 transition-all font-medium">+ Clean Packaging</button>
+                <button onclick="toggleFeedbackChip(this)" class="feedback-tag px-2 py-0.5 rounded-full text-[10px] bg-slate-100 text-slate-600 border border-slate-200 transition-all font-medium">+ Courteous Donor</button>
+                <button onclick="toggleFeedbackChip(this)" class="feedback-tag px-2 py-0.5 rounded-full text-[10px] bg-slate-100 text-slate-600 border border-slate-200 transition-all font-medium">+ Accurate Portions</button>
+              </div>
+
+              <!-- Feedback Textarea Input matching Photo 4 -->
+              <div>
+                <label class="text-xs font-semibold text-slate-700 block mb-1">Provide Feedback (Optional)</label>
+                <textarea id="feedback-notes-input" rows="2" placeholder="Write your experience here..." class="w-full text-xs p-2.5 rounded-xl bg-slate-100/90 border border-slate-200 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-teal"></textarea>
+              </div>
+            </div>
+          </div>
+
+          <!-- Submit & Finish Button matching Photo 4 (Deep Teal Pill) -->
+          <div class="pt-3 border-t border-slate-100 mt-1">
+            <button onclick="submitFeedbackReview()" class="w-full py-3 rounded-full bg-brand-teal text-white font-bold text-xs shadow-btn-teal flex items-center justify-center gap-1.5 active:scale-95 transition-all hover:bg-brand-tealDark">
+              Submit & Finish
+            </button>
+          </div>
+        </section>
+
+        <!-- ============================================== -->
+        <!-- SCREEN: IN-APP TURN-BY-TURN NAVIGATION MODE    -->
+        <!-- ============================================== -->
+        <section id="screen-navigation" class="screen-view screen-hidden absolute inset-0 pt-11 flex flex-col bg-slate-900 text-white z-40">
+          <!-- Top Navigation HUD -->
+          <div class="p-4 bg-slate-800 border-b border-slate-700 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-2xl bg-brand-teal flex items-center justify-center shadow-lg">
+                <!-- Turn left arrow -->
+                <svg class="w-6 h-6 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 14l-5-5 5-5M4 9h10.5a5.5 5.5 0 015.5 5.5v2.5"/></svg>
+              </div>
+              <div>
+                <h4 class="text-sm font-extrabold text-white">In 350m, Turn Left</h4>
+                <p class="text-xs text-slate-300">Onto 17th Cross Road, HSR Sector 4</p>
+              </div>
+            </div>
+            <button onclick="closeDirectionsMode()" class="px-3 py-1.5 rounded-xl bg-slate-700 hover:bg-slate-600 text-xs font-bold text-slate-200">
+              Exit
+            </button>
+          </div>
+
+          <!-- Live Routing Simulation Canvas -->
+          <div class="flex-1 relative bg-slate-950 overflow-hidden">
+            <svg class="w-full h-full" viewBox="0 0 390 450">
+              <!-- Grid Roads -->
+              <line x1="0" y1="120" x2="390" y2="120" stroke="#334155" stroke-width="16"/>
+              <line x1="0" y1="280" x2="390" y2="280" stroke="#334155" stroke-width="16"/>
+              <line x1="100" y1="0" x2="100" y2="450" stroke="#334155" stroke-width="16"/>
+              <line x1="280" y1="0" x2="280" y2="450" stroke="#334155" stroke-width="16"/>
+
+              <!-- Navigation Path Animated Polyline -->
+              <polyline points="100,380 100,280 280,280 280,120" fill="none" stroke="#217B85" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+              <polyline points="100,380 100,280 280,280 280,120" fill="none" stroke="#3AA5B0" stroke-width="4" stroke-dasharray="8 6" stroke-linecap="round">
+                <animate attributeName="stroke-dashoffset" values="28;0" dur="1s" repeatCount="indefinite"/>
+              </polyline>
+
+              <!-- Start Origin (User) -->
+              <circle cx="100" cy="380" r="10" fill="#3B82F6"/>
+              <circle cx="100" cy="380" r="4" fill="#FFFFFF"/>
+
+              <!-- Destination Pin (Akshaya Kitchen) -->
+              <g transform="translate(280, 110)">
+                <circle cx="0" cy="0" r="14" fill="#EE6F2D"/>
+                <circle cx="0" cy="0" r="6" fill="#FFFFFF"/>
+                <text x="0" y="-18" text-anchor="middle" fill="#FFFFFF" font-size="11" font-weight="bold">Akshaya Kitchen</text>
+              </g>
+            </svg>
+
+            <!-- Floating Trip Info Bar -->
+            <div class="absolute bottom-4 inset-x-4 p-3.5 rounded-2xl bg-slate-800/95 backdrop-blur-md border border-slate-700 shadow-xl flex items-center justify-between">
+              <div>
+                <div class="text-xs text-slate-400">Estimated Travel Time</div>
+                <div class="text-base font-extrabold text-white flex items-center gap-1.5">
+                  <span class="text-emerald-400">6 mins</span>
+                  <span class="text-xs font-normal text-slate-400">• 1.2 km</span>
+                </div>
+              </div>
+              <button onclick="navigateTo('confirmation'); closeDirectionsMode();" class="px-4 py-2 rounded-xl bg-brand-orange text-white text-xs font-bold shadow hover:bg-brand-orangeDark">
+                I Have Arrived
+              </button>
+            </div>
+          </div>
+        </section>
+
+      </div>
+
+      <!-- BOTTOM SHEETS & INTERACTIVE MODALS -->
+
+      <!-- 1. FOOD SAFETY & QUALITY GUIDELINES MODAL -->
+      <div id="modal-safety" class="absolute inset-0 bg-slate-950/70 backdrop-blur-xs z-50 p-4 flex items-end justify-center hidden transition-all">
+        <div class="bg-white rounded-3xl p-5 w-full max-h-[85%] overflow-y-auto space-y-3 shadow-2xl animate-in fade-in">
+          <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+            <div class="flex items-center gap-2 text-brand-teal">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+              <h4 class="font-bold text-sm text-slate-900">Food Safety & Quality Rules</h4>
+            </div>
+            <button onclick="closeSafetyModal()" class="text-slate-400 hover:text-slate-700 text-lg">&times;</button>
+          </div>
+          <div class="space-y-2 text-xs text-slate-600 leading-relaxed">
+            <div class="p-2.5 rounded-xl bg-orange-50 border border-orange-200">
+              <strong class="text-orange-950 block mb-0.5">1. The 4-Hour Cooked Food Rule:</strong>
+              <p>Cooked meals must be collected and consumed within 4 hours of preparation unless held in commercial heating (>65°C) or refrigeration.</p>
+            </div>
+            <div class="p-2.5 rounded-xl bg-teal-50 border border-teal-200">
+              <strong class="text-teal-950 block mb-0.5">2. Packaging & Tamper Seal:</strong>
+              <p>Donations must be handed over in food-grade, sanitized containers with preparation time labels.</p>
+            </div>
+            <div class="p-2.5 rounded-xl bg-slate-100 border border-slate-200">
+              <strong class="text-slate-900 block mb-0.5">3. Recipient Inspection Rights:</strong>
+              <p>Recipients have the full right to visually inspect aroma and packaging integrity prior to completing the pickup.</p>
+            </div>
+          </div>
+          <button onclick="closeSafetyModal()" class="w-full py-2.5 rounded-xl bg-brand-teal text-white font-bold text-xs mt-1">
+            I Understand & Agree
+          </button>
+        </div>
+      </div>
+
+      <!-- 2. DONOR POSTING MODAL (Add Surplus Food) -->
+      <div id="modal-donor-post" class="absolute inset-0 bg-slate-950/70 backdrop-blur-xs z-50 p-4 flex items-end justify-center hidden transition-all">
+        <div class="bg-white rounded-3xl p-5 w-full max-h-[92%] overflow-y-auto space-y-3 shadow-2xl">
+          <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+            <h4 class="font-bold text-sm text-slate-900 flex items-center gap-1.5">
+              <span class="text-brand-orange">🍲</span> Share Surplus Food (Donor Flow)
+            </h4>
+            <button onclick="closeDonorModal()" class="text-slate-400 hover:text-slate-700 text-lg">&times;</button>
+          </div>
+          <div class="space-y-2.5 text-xs text-slate-800">
+            <div>
+              <label class="font-bold text-slate-700 block mb-1">Meal / Dish Title</label>
+              <input type="text" id="post-meal-title" value="Vegetable Biryani with Cucumber Raita" class="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-orange">
+            </div>
+            <div class="grid grid-cols-2 gap-2">
+              <div>
+                <label class="font-bold text-slate-700 block mb-1">Portions (Meals)</label>
+                <input type="number" id="post-meal-portions" value="10" min="1" max="100" class="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 font-semibold text-slate-800">
+              </div>
+              <div>
+                <label class="font-bold text-slate-700 block mb-1">Dietary Category</label>
+                <select id="post-meal-diet" class="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 font-semibold text-slate-800">
+                  <option value="Veg, Nut-Free">Pure Veg (Nut-Free)</option>
+                  <option value="Vegan, Low Spice">Vegan</option>
+                  <option value="Eggitarian">Eggitarian</option>
+                  <option value="Non-Veg, Halal">Non-Veg (Halal)</option>
+                </select>
+              </div>
+            </div>
+            <div>
+              <label class="font-bold text-slate-700 block mb-1">Pickup Time Window</label>
+              <input type="text" id="post-meal-window" value="2:30 PM - 5:30 PM Today" class="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 font-semibold text-slate-800">
+            </div>
+            <div>
+              <label class="font-bold text-slate-700 block mb-1">Pickup Location / Address</label>
+              <input type="text" id="post-meal-address" value="Sector 2, HSR Layout, Bengaluru" class="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 font-semibold text-slate-800">
+            </div>
+          </div>
+          <button onclick="publishNewDonationListing()" class="w-full py-3 rounded-xl bg-brand-orange text-white font-bold text-xs shadow-btn-orange active:scale-95 transition-all">
+            Publish Live on Akshaya Map
+          </button>
+        </div>
+      </div>
+
+      <!-- 3. MY REQUESTS DRAWER (Active & Past Orders) -->
+      <div id="drawer-requests" class="absolute inset-0 bg-slate-950/70 backdrop-blur-xs z-50 p-4 flex items-end justify-center hidden">
+        <div class="bg-white rounded-3xl p-5 w-full max-h-[85%] overflow-y-auto space-y-3 shadow-2xl">
+          <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+            <h4 class="font-bold text-sm text-slate-900">My Food Pickups & History</h4>
+            <button onclick="closeMyRequestsDrawer()" class="text-slate-400 hover:text-slate-700 text-lg">&times;</button>
+          </div>
+          <div id="my-requests-list" class="space-y-2.5 text-xs">
+            <!-- Dynamic requests injected -->
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. NOTIFICATIONS DRAWER -->
+      <div id="drawer-notifications" class="absolute inset-0 bg-slate-950/70 backdrop-blur-xs z-50 p-4 flex items-end justify-center hidden">
+        <div class="bg-white rounded-3xl p-5 w-full max-h-[80%] overflow-y-auto space-y-3 shadow-2xl">
+          <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+            <h4 class="font-bold text-sm text-slate-900">Notifications & Alerts</h4>
+            <button onclick="closeNotificationDrawer()" class="text-slate-400 hover:text-slate-700 text-lg">&times;</button>
+          </div>
+          <div class="space-y-2 text-xs">
+            <div class="p-3 rounded-2xl bg-amber-50 border border-amber-200">
+              <span class="font-bold text-amber-900 block">⚡ Urgent Surplus Alert</span>
+              <p class="text-amber-800 text-[11px] mt-0.5">Aisha Khan just listed 8 meals in HSR Layout available for immediate pickup.</p>
+            </div>
+            <div class="p-3 rounded-2xl bg-teal-50 border border-teal-200">
+              <span class="font-bold text-teal-900 block">✅ Community Impact Milestone</span>
+              <p class="text-teal-800 text-[11px] mt-0.5">Your area has rescued 320 kg of nutritious food this week!</p>
+            </div>
+          </div>
+          <button onclick="closeNotificationDrawer()" class="w-full py-2.5 rounded-xl bg-slate-100 text-slate-700 font-bold text-xs">
+            Close Alerts
+          </button>
+        </div>
+      </div>
+
+      <!-- 5. USER PROFILE DRAWER -->
+      <div id="drawer-profile" class="absolute inset-0 bg-slate-950/70 backdrop-blur-xs z-50 p-4 flex items-end justify-center hidden">
+        <div class="bg-white rounded-3xl p-5 w-full max-h-[85%] overflow-y-auto space-y-3 shadow-2xl">
+          <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+            <h4 class="font-bold text-sm text-slate-900">User Profile & Impact</h4>
+            <button onclick="closeProfileDrawer()" class="text-slate-400 hover:text-slate-700 text-lg">&times;</button>
+          </div>
+          <div class="flex items-center gap-3 p-3 rounded-2xl bg-slate-50 border border-slate-200">
+            <div class="w-12 h-12 rounded-full bg-brand-teal text-white flex items-center justify-center font-bold text-base">
+              AK
+            </div>
+            <div>
+              <h5 class="font-bold text-sm text-slate-900">Aisha Khan (Akshaya Kitchen)</h5>
+              <p class="text-xs text-slate-500">Verified Food Donor • HSR Layout</p>
+              <span class="inline-block px-2 py-0.5 mt-1 rounded bg-emerald-100 text-emerald-800 text-[10px] font-bold">FSSAI Certified</span>
+            </div>
+          </div>
+          <!-- Impact counter metrics -->
+          <div class="grid grid-cols-3 gap-2 text-center">
+            <div class="p-2.5 rounded-xl bg-orange-50 border border-orange-100">
+              <div class="text-base font-extrabold text-brand-orange">48</div>
+              <div class="text-[10px] text-slate-600 font-semibold">Meals Shared</div>
+            </div>
+            <div class="p-2.5 rounded-xl bg-teal-50 border border-teal-100">
+              <div class="text-base font-extrabold text-brand-teal">36kg</div>
+              <div class="text-[10px] text-slate-600 font-semibold">Food Saved</div>
+            </div>
+            <div class="p-2.5 rounded-xl bg-emerald-50 border border-emerald-100">
+              <div class="text-base font-extrabold text-emerald-700">98%</div>
+              <div class="text-[10px] text-slate-600 font-semibold">Trust Score</div>
+            </div>
+          </div>
+          <button onclick="navigateTo('onboarding'); closeProfileDrawer();" class="w-full py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs mt-1">
+            Sign Out & Switch Role
+          </button>
+        </div>
+      </div>
+
+      <!-- 6. AUTHENTICATION (SIGN IN / SIGN UP) MODAL -->
+      <div id="modal-auth" class="absolute inset-0 bg-slate-950/70 backdrop-blur-xs z-50 p-4 flex items-end justify-center hidden">
+        <div class="bg-white rounded-3xl p-5 w-full max-h-[85%] overflow-y-auto space-y-3 shadow-2xl">
+          <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+            <h4 id="auth-modal-title" class="font-bold text-sm text-slate-900">Sign In to Akshaya Patram</h4>
+            <button onclick="closeAuthModal()" class="text-slate-400 hover:text-slate-700 text-lg">&times;</button>
+          </div>
+          <div class="space-y-3 text-xs">
+            <div>
+              <label class="font-semibold text-slate-700 block mb-1">Phone Number or Email</label>
+              <input type="text" value="+91 98765 43210" class="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 font-medium">
+            </div>
+            <div>
+              <label class="font-semibold text-slate-700 block mb-1">One-Time Password (OTP)</label>
+              <input type="text" value="4829" class="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 font-medium">
+            </div>
+          </div>
+          <button onclick="completeAuthentication()" class="w-full py-2.5 rounded-xl bg-brand-orange text-white font-bold text-xs shadow-btn-orange">
+            Verify & Continue
+          </button>
+        </div>
+      </div>
+
+      <!-- 7. FILTER MODAL -->
+      <div id="modal-filter" class="absolute inset-0 bg-slate-950/70 backdrop-blur-xs z-50 p-4 flex items-end justify-center hidden">
+        <div class="bg-white rounded-3xl p-5 w-full max-h-[85%] overflow-y-auto space-y-3 shadow-2xl">
+          <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+            <h4 class="font-bold text-sm text-slate-900">Filter Surplus Food</h4>
+            <button onclick="closeFilterModal()" class="text-slate-400 hover:text-slate-700 text-lg">&times;</button>
+          </div>
+          <div class="space-y-3 text-xs">
+            <div>
+              <label class="font-semibold text-slate-700 block mb-1">Dietary Preference</label>
+              <div class="flex gap-2">
+                <button onclick="this.classList.toggle('bg-brand-teal'); this.classList.toggle('text-white');" class="px-3 py-1.5 rounded-xl border border-slate-200 font-bold bg-brand-teal text-white">Pure Veg</button>
+                <button onclick="this.classList.toggle('bg-brand-teal'); this.classList.toggle('text-white');" class="px-3 py-1.5 rounded-xl border border-slate-200 font-bold">Nut-Free</button>
+                <button onclick="this.classList.toggle('bg-brand-teal'); this.classList.toggle('text-white');" class="px-3 py-1.5 rounded-xl border border-slate-200 font-bold">Halal</button>
+              </div>
+            </div>
+            <div>
+              <label class="font-semibold text-slate-700 block mb-1">Maximum Distance: <span id="radius-val" class="text-brand-orange font-bold">5 km</span></label>
+              <input type="range" min="1" max="15" value="5" oninput="document.getElementById('radius-val').innerText = this.value + ' km'" class="w-full accent-brand-teal">
+            </div>
+          </div>
+          <button onclick="applyAdvancedFilters()" class="w-full py-2.5 rounded-xl bg-brand-teal text-white font-bold text-xs shadow-btn-teal">
+            Apply Filters
+          </button>
+        </div>
+      </div>
+
+      <!-- IN-APP TOAST ALERT -->
+      <div id="app-toast" class="absolute top-12 inset-x-4 bg-slate-900/95 text-white p-3 rounded-2xl shadow-xl z-50 flex items-center gap-2.5 text-xs font-semibold transform -translate-y-24 transition-transform duration-300">
+        <span id="toast-icon" class="text-brand-orange text-base">ℹ️</span>
+        <span id="toast-message" class="flex-1">Notification text</span>
+      </div>
+
+      <!-- iOS Home Bottom Indicator Bar -->
+      <div class="absolute bottom-1.5 left-1/2 -translate-x-1/2 w-32 h-1 bg-slate-800 rounded-full z-50 pointer-events-none"></div>
+
+    </div>
+
+    <!-- SIDE-BY-SIDE ALL 4 SCREENS GALLERY (Initially Hidden) -->
+    <div id="sidebyside-container" class="hidden w-full max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 items-start pb-12">
+      <!-- Cards rendered for side-by-side view -->
+    </div>
+
+  </main>
+
+  <!-- JAVASCRIPT STATE ENGINE & INTERACTION LOGIC -->
+  <script>
+    // Global Application State Store
+    const AppState = {
+      activeScreen: 'onboarding',
+      userRole: 'recipient', // 'donor' | 'recipient'
+      userLocation: { lat: 12.9141, lng: 77.6411, name: 'HSR Layout, Bengaluru' },
+      
+      // Verified Food Listings Data (matching the screenshot pins)
+      listings: [
+        {
+          id: 'AP-101',
+          title: 'Vegetable Rice & Lentils',
+          count: '8 Meals',
+          portionsNum: 8,
+          servings: '8 Servings (Estimated 6kg)',
+          dietary: 'Veg, Nut-Free, Low Spice',
+          pickupWindow: '2:00 PM - 5:00 PM Today',
+          address: '456, HSR Layout, Bengaluru',
+          distance: '1.2 km away',
+          donorName: 'Aisha Khan (Akshaya Kitchen)',
+          donorRating: '4.7',
+          donorAvatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=150&q=80',
+          image: 'https://images.unsplash.com/photo-1546833999-b9f581a1996d?auto=format&fit=crop&w=800&q=80',
+          pinX: 70,
+          pinY: 285,
+          color: 'orange',
+          clusterCount: 3,
+          status: 'available'
+        },
+        {
+          id: 'AP-102',
+          title: 'Paneer Pulao & Raita',
+          count: '12 Meals',
+          portionsNum: 12,
+          servings: '12 Servings (Estimated 8kg)',
+          dietary: 'Veg, High Protein, Mild Spice',
+          pickupWindow: 'Until 6:00 PM Today',
+          address: '100ft Road, Indiranagar, Bengaluru',
+          distance: '2.8 km away',
+          donorName: 'Community Seva Kitchen',
+          donorRating: '4.9',
+          donorAvatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80',
+          image: 'https://images.unsplash.com/photo-1589302168068-964664d93dc0?auto=format&fit=crop&w=800&q=80',
+          pinX: 255,
+          pinY: 160,
+          color: 'orange',
+          clusterCount: 0,
+          status: 'available'
+        },
+        {
+          id: 'AP-103',
+          title: 'Fresh Artisan Sandwiches',
+          count: '5 Meals',
+          portionsNum: 5,
+          servings: '5 Packs (Fresh Bread & Veggies)',
+          dietary: 'Veg, Nut-Free, Dairy',
+          pickupWindow: 'Immediate Pickup (Until 4 PM)',
+          address: '4th Block, Koramangala, Bengaluru',
+          distance: '0.8 km away',
+          donorName: 'Green Oven Cafe',
+          donorRating: '4.8',
+          donorAvatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80',
+          image: 'https://images.unsplash.com/photo-1528735602780-2552fd46c7af?auto=format&fit=crop&w=800&q=80',
+          pinX: 110,
+          pinY: 170,
+          color: 'teal',
+          clusterCount: 2,
+          status: 'available'
+        },
+        {
+          id: 'AP-104',
+          title: 'Dal Makhani & Steamed Rice',
+          count: '8 Meals',
+          portionsNum: 8,
+          servings: '8 Servings (Estimated 5.5kg)',
+          dietary: 'Veg, Rich Gravy, Gluten-Free',
+          pickupWindow: '3:00 PM - 6:00 PM Today',
+          address: 'Green Glen Layout, Bellandur, Bengaluru',
+          distance: '3.4 km away',
+          donorName: 'Bhojan Seva Trust',
+          donorRating: '4.9',
+          donorAvatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=150&q=80',
+          image: 'https://images.unsplash.com/photo-1585937421612-70a008356fbe?auto=format&fit=crop&w=800&q=80',
+          pinX: 260,
+          pinY: 260,
+          color: 'teal',
+          clusterCount: 2,
+          status: 'available'
+        }
+      ],
+
+      selectedMealId: 'AP-101',
+      myOrders: [
+        {
+          orderId: '#AP987654',
+          mealTitle: 'Vegetable Rice & Lentils',
+          portions: '8 Meals (6kg)',
+          pickupSlot: '2:00 PM - 5:00 PM Today',
+          address: '456, HSR Layout, Bengaluru',
+          donor: 'Aisha Khan (Akshaya Kitchen)',
+          status: 'Confirmed'
+        }
+      ],
+
+      currentRating: 5,
+      activeFeedbackChips: [],
+      isSideBySide: false
+    };
+
+    // Live Status Bar Clock
+    function updatePhoneClock() {
+      const now = new Date();
+      let hours = now.getHours();
+      let minutes = now.getMinutes();
+      const ampm = hours >= 12 ? 'PM' : 'AM';
+      hours = hours % 12;
+      hours = hours ? hours : 12;
+      const formattedMin = minutes < 10 ? '0' + minutes : minutes;
+      const timeStr = `${hours}:${formattedMin}`;
+      const clockEl = document.getElementById('live-phone-time');
+      if (clockEl) clockEl.innerText = timeStr;
+    }
+    setInterval(updatePhoneClock, 10000);
+    updatePhoneClock();
+
+    // In-App Toast System
+    function showToast(message, icon = 'ℹ️', duration = 3000) {
+      const toast = document.getElementById('app-toast');
+      const msgEl = document.getElementById('toast-message');
+      const iconEl = document.getElementById('toast-icon');
+      if (!toast || !msgEl) return;
+
+      msgEl.innerText = message;
+      iconEl.innerText = icon;
+      toast.classList.remove('-translate-y-24');
+      toast.classList.add('translate-y-0');
+
+      setTimeout(() => {
+        toast.classList.remove('translate-y-0');
+        toast.classList.add('-translate-y-24');
+      }, duration);
+    }
+
+    // Screen Navigation Controller
+    function navigateTo(screenId) {
+      AppState.activeScreen = screenId;
+
+      // All screen ids
+      const screens = ['onboarding', 'dashboard', 'detail', 'confirmation', 'navigation'];
+      screens.forEach(s => {
+        const el = document.getElementById(`screen-${s}`);
+        if (el) el.classList.add('screen-hidden');
+      });
+
+      // Show active screen
+      const target = document.getElementById(`screen-${screenId}`);
+      if (target) target.classList.remove('screen-hidden');
+
+      // Update Showcase navigation tabs
+      const tabs = ['onboarding', 'dashboard', 'detail', 'confirmation'];
+      tabs.forEach(t => {
+        const tabEl = document.getElementById(`tab-nav-${t}`);
+        if (tabEl) {
+          if (t === screenId) {
+            tabEl.className = 'nav-tab px-3 py-1.5 rounded-xl text-xs font-semibold transition-all bg-brand-orange text-white shadow';
+          } else {
+            tabEl.className = 'nav-tab px-3 py-1.5 rounded-xl text-xs font-semibold transition-all text-slate-400 hover:text-white';
+          }
+        }
+      });
+
+      // Special screen triggers
+      if (screenId === 'dashboard') {
+        renderMapPins();
+        renderListCards();
+      } else if (screenId === 'detail') {
+        populateMealDetail();
+      } else if (screenId === 'confirmation') {
+        populateConfirmationScreen();
+      }
+
+      // If user was in side-by-side mode, switch back to interactive phone
+      if (AppState.isSideBySide) {
+        toggleSideBySide();
+      }
+    }
+
+    // Onboarding: Role selection handler
+    function handleRoleChoice(role) {
+      AppState.userRole = role;
+      if (role === 'donor') {
+        showToast('Logged in as Donor. You can post surplus food directly to the community map!', '👨‍🍳');
+        openDonorModal();
+      } else {
+        showToast('Welcome Recipient! Viewing available meals in Bengaluru.', '📍');
+        navigateTo('dashboard');
+      }
+    }
+
+    // Render interactive Pins onto the Map matching Photo 2
+    function renderMapPins() {
+      const container = document.getElementById('pins-container');
+      if (!container) return;
+      container.innerHTML = '';
+
+      AppState.listings.forEach(item => {
+        if (item.status === 'claimed') return; // Hide claimed items
+
+        const pinWrapper = document.createElement('div');
+        pinWrapper.className = `absolute transform -translate-x-1/2 -translate-y-1/2 cursor-pointer transition-transform hover:scale-110 z-30 group`;
+        pinWrapper.style.top = `${item.pinY}px`;
+        pinWrapper.style.left = `${item.pinX}px`;
+        pinWrapper.onclick = () => selectAndOpenMeal(item.id);
+
+        const badgeColor = item.color === 'orange' ? 'text-brand-orange' : 'text-brand-teal';
+        const circleBg = item.color === 'orange' ? 'bg-brand-orange' : 'bg-brand-teal';
+
+        let clusterHtml = '';
+        if (item.clusterCount > 0) {
+          clusterHtml = `
+            <div class="absolute -bottom-3 left-1/2 -translate-x-1/2 flex gap-0.5">
+              ${Array(item.clusterCount).fill(0).map(() => `<span class="w-2 h-2 rounded-full ${circleBg} border border-white"></span>`).join('')}
+            </div>
+          `;
+        }
+
+        pinWrapper.innerHTML = `
+          <!-- Speech Bubble Tag matching Photo 2 -->
+          <div class="bg-white px-2 py-1.5 rounded-xl shadow-pin border border-slate-200/90 flex flex-col items-start whitespace-nowrap animate-bounce duration-1000">
+            <span class="text-[9px] text-slate-400 font-bold uppercase tracking-wider leading-none">SURPLUS FOOD</span>
+            <div class="flex items-center gap-1 text-slate-900 font-extrabold text-xs mt-0.5">
+              <svg class="w-3 h-3 ${badgeColor}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 8h1a4 4 0 0 1 0 8h-1M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8zM6 1v3M10 1v3M14 1v3"/></svg>
+              <span>${item.count}</span>
+            </div>
+          </div>
+          <!-- Pin Stem & Pulsing Center -->
+          <div class="flex justify-center -mt-1">
+            <div class="w-4 h-4 rounded-full ${circleBg} text-white flex items-center justify-center border-2 border-white shadow ${item.id === 'AP-101' ? 'pulse-ring' : ''}">
+              <div class="w-1.5 h-1.5 bg-white rounded-full"></div>
+            </div>
+          </div>
+          ${clusterHtml}
+        `;
+
+        container.appendChild(pinWrapper);
+      });
+    }
+
+    // Render List View Cards (Alternative to Map View)
+    function renderListCards() {
+      const container = document.getElementById('meals-list-cards');
+      if (!container) return;
+      container.innerHTML = '';
+
+      const availableItems = AppState.listings.filter(i => i.status !== 'claimed');
+      document.getElementById('list-total-count').innerText = `${availableItems.length} Verified Listings`;
+
+      availableItems.forEach(item => {
+        const card = document.createElement('div');
+        card.className = "bg-white p-3.5 rounded-2xl border border-slate-200 shadow-xs flex items-center justify-between cursor-pointer hover:border-brand-orange transition-all active:scale-[0.99]";
+        card.onclick = () => selectAndOpenMeal(item.id);
+
+        card.innerHTML = `
+          <div class="flex items-center gap-3">
+            <div class="w-12 h-12 rounded-xl overflow-hidden bg-slate-100 shrink-0 border border-slate-200">
+              <img src="${item.image}" alt="${item.title}" class="w-full h-full object-cover">
+            </div>
+            <div>
+              <div class="flex items-center gap-1.5">
+                <span class="font-bold text-slate-900 text-xs">${item.count}</span>
+                <span class="text-[10px] text-slate-400">• ${item.distance}</span>
+              </div>
+              <h4 class="text-xs font-semibold text-slate-700">${item.title}</h4>
+              <div class="flex items-center gap-1 mt-1">
+                <span class="text-[9px] px-1.5 py-0.2 rounded bg-emerald-100 text-emerald-800 font-bold">FSSAI</span>
+                <span class="text-[9px] text-slate-500">${item.dietary.split(',')[0]}</span>
+              </div>
+            </div>
+          </div>
+          <span class="text-xs font-bold text-brand-orange">View &rarr;</span>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    // Open meal details screen
+    function selectAndOpenMeal(mealId) {
+      AppState.selectedMealId = mealId;
+      navigateTo('detail');
+    }
+
+    // Populate Food Detail Screen matching Photo 3
+    function populateMealDetail() {
+      const meal = AppState.listings.find(m => m.id === AppState.selectedMealId) || AppState.listings[0];
+
+      document.getElementById('detail-title-meals').innerText = meal.count;
+      document.getElementById('detail-dish-title').innerText = meal.title;
+      document.getElementById('detail-quantity-desc').innerText = meal.servings;
+      document.getElementById('detail-dietary-desc').innerText = meal.dietary;
+      document.getElementById('detail-pickup-window').innerHTML = `
+        <svg class="w-3.5 h-3.5 text-brand-orange" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        <span>${meal.pickupWindow}</span>
+      `;
+      document.getElementById('detail-address').innerHTML = `
+        <svg class="w-3.5 h-3.5 text-brand-teal" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        <span>${meal.address}</span>
+      `;
+      document.getElementById('detail-donor-name').innerText = `Donor (${meal.donorName.split('(')[0].trim()})`;
+      document.getElementById('detail-donor-rating').innerText = meal.donorRating;
+      document.getElementById('detail-donor-avatar').src = meal.donorAvatar;
+      document.getElementById('detail-image').src = meal.image;
+
+      // Inventory badge
+      const statusPill = document.getElementById('detail-status-pill');
+      if (meal.status === 'claimed') {
+        statusPill.className = "px-2 py-0.5 rounded text-[10px] font-bold bg-slate-200 text-slate-700";
+        statusPill.innerText = "Claimed";
+      } else {
+        statusPill.className = "px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-200";
+        statusPill.innerText = "Available Now";
+      }
+    }
+
+    // Execute Acceptance of Pickup (Updates inventory & locks transaction)
+    async function executePickupAcceptance() {
+      const meal = AppState.listings.find(m => m.id === AppState.selectedMealId);
+      if (!meal) return;
+
+      if (AppState.backendConnected) {
+        try {
+          const res = await fetch(`${API_URL}/orders`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ mealId: meal.id })
+          });
+          const json = await res.json();
+          if (json.success && json.data) {
+            meal.status = 'claimed';
+            AppState.myOrders.unshift(json.data);
+            showToast(`Pickup reserved! Order ${json.data.orderId} created in database.`, '✅');
+            navigateTo('confirmation');
+            return;
+          }
+        } catch (e) {
+          console.warn('Backend order failed, falling back to local state:', e);
+        }
+      }
+
+      // Local fallback
+      meal.status = 'claimed';
+      const orderToken = '#AP' + Math.floor(100000 + Math.random() * 900000);
+      AppState.myOrders.unshift({
+        orderId: orderToken,
+        mealTitle: meal.title,
+        portions: `${meal.count} (${meal.servings})`,
+        pickupSlot: meal.pickupWindow,
+        address: meal.address,
+        donor: meal.donorName,
+        status: 'Confirmed'
+      });
+
+      showToast(`Pickup reserved! Inventory updated for ${meal.title}`, '✅');
+      navigateTo('confirmation');
+    }
+
+    // Populate Confirmation Screen matching Photo 4
+    function populateConfirmationScreen() {
+      const latestOrder = AppState.myOrders[0] || {
+        orderId: '#AP987654',
+        mealTitle: 'Vegetable Rice & Lentils',
+        portions: '8 Meals (Estimated 6kg)',
+        pickupSlot: '2:00 PM - 5:00 PM Today',
+        donor: 'Akshaya Kitchen (Aisha Khan)'
+      };
+
+      document.getElementById('confirm-order-id').innerText = latestOrder.orderId;
+      document.getElementById('confirm-item-name').innerText = latestOrder.mealTitle;
+      document.getElementById('confirm-quantity').innerText = latestOrder.portions;
+      document.getElementById('confirm-slot-time').innerText = latestOrder.pickupSlot;
+      document.getElementById('confirm-hero-text').innerHTML = `You have accepted the donation from <strong class="text-slate-800">${latestOrder.donor}</strong>.`;
+      document.getElementById('confirm-rate-heading').innerText = `Rate ${latestOrder.donor.split('(')[0].trim() || 'Akshaya Kitchen'}`;
+    }
+
+    // Star Rating Interactivity
+    function handleStarSelect(val) {
+      AppState.currentRating = val;
+      const stars = document.querySelectorAll('#rating-stars-bar .star-pill');
+      const sentiments = ['Needs Improvement (1.0)', 'Fair (2.0)', 'Good (3.0)', 'Very Good (4.0)', 'Excellent (5.0)'];
+
+      stars.forEach((star, index) => {
+        if (index < val) {
+          star.classList.add('text-amber-400');
+          star.classList.remove('text-slate-300');
+        } else {
+          star.classList.remove('text-amber-400');
+          star.classList.add('text-slate-300');
+        }
+      });
+
+      document.getElementById('rating-sentiment-text').innerText = sentiments[val - 1];
+    }
+
+    // Feedback Tag toggle
+    function toggleFeedbackChip(chip) {
+      chip.classList.toggle('bg-brand-teal');
+      chip.classList.toggle('text-white');
+      chip.classList.toggle('border-brand-teal');
+
+      const tagText = chip.innerText.replace('+', '').trim();
+      const textarea = document.getElementById('feedback-notes-input');
+      if (textarea) {
+        if (chip.classList.contains('bg-brand-teal')) {
+          textarea.value = textarea.value ? `${textarea.value}, ${tagText}` : tagText;
+        }
+      }
+    }
+
+    // Submit Feedback & Return to Dashboard
+    async function submitFeedbackReview() {
+      const latestOrder = AppState.myOrders[0];
+      const textarea = document.getElementById('feedback-notes-input');
+      const comment = textarea ? textarea.value.trim() : '';
+
+      if (latestOrder && AppState.backendConnected) {
+        try {
+          await fetch(`${API_URL}/orders/${encodeURIComponent(latestOrder.orderId)}/review`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              stars: AppState.currentRating,
+              sentiment: document.getElementById('rating-sentiment-text').innerText,
+              tags: AppState.activeFeedbackChips,
+              comment: comment
+            })
+          });
+        } catch (e) {
+          console.warn('Review save to API failed:', e);
+        }
+      }
+
+      showToast('Thank you! Your feedback has been recorded in database.', '🌟');
+      if (textarea) textarea.value = '';
+
+      setTimeout(() => {
+        navigateTo('dashboard');
+        syncWithBackend();
+      }, 700);
+    }
+
+    // Toggle Map View vs List View
+    function toggleMapList(mode) {
+      const mapContainer = document.getElementById('dashboard-map-container');
+      const listContainer = document.getElementById('dashboard-list-container');
+      const btnMap = document.getElementById('btn-view-map');
+      const btnList = document.getElementById('btn-view-list');
+
+      if (mode === 'map') {
+        mapContainer.classList.remove('hidden');
+        listContainer.classList.add('hidden');
+        btnMap.className = 'px-3.5 py-1 rounded-full bg-slate-800 text-white shadow-xs transition-all';
+        btnList.className = 'px-3.5 py-1 rounded-full text-slate-600 hover:text-slate-900 transition-all';
+      } else {
+        mapContainer.classList.add('hidden');
+        listContainer.classList.remove('hidden');
+        btnList.className = 'px-3.5 py-1 rounded-full bg-slate-800 text-white shadow-xs transition-all';
+        btnMap.className = 'px-3.5 py-1 rounded-full text-slate-600 hover:text-slate-900 transition-all';
+        renderListCards();
+      }
+    }
+
+    // Search and filtering
+    function handleSearchInput(e) {
+      if (e.key === 'Enter') {
+        applySearchFilter();
+      }
+    }
+
+    function applySearchFilter() {
+      const query = document.getElementById('map-search-input').value.toLowerCase().trim();
+      const matches = AppState.listings.filter(l => 
+        l.address.toLowerCase().includes(query) || 
+        l.title.toLowerCase().includes(query)
+      );
+
+      if (matches.length > 0) {
+        showToast(`Found ${matches.length} meal donations in "${query}"`, '🔎');
+      } else {
+        showToast(`Showing all nearby surplus meals around Bengaluru`, '📍');
+      }
+    }
+
+    // Nearby Quick Filter (Radius 3km)
+    function triggerNearbyFilter() {
+      showToast('Radius set to 2.5 km around HSR Layout. Showing closest pickups.', '🎯');
+      renderMapPins();
+    }
+
+    function recenterGPS() {
+      const userMarker = document.getElementById('gps-user-marker');
+      if (userMarker) {
+        userMarker.classList.add('scale-150');
+        setTimeout(() => userMarker.classList.remove('scale-150'), 400);
+      }
+      showToast('GPS Lock: HSR Layout, Bengaluru (12.9141° N, 77.6411° E)', '🛰️');
+    }
+
+    // Directions Mode (Turn-by-turn Navigation)
+    function launchDirectionsMode() {
+      const navScreen = document.getElementById('screen-navigation');
+      if (navScreen) navScreen.classList.remove('screen-hidden');
+    }
+
+    function closeDirectionsMode() {
+      const navScreen = document.getElementById('screen-navigation');
+      if (navScreen) navScreen.classList.add('screen-hidden');
+    }
+
+    // Modals & Drawers Controllers
+    function openSafetyModal() {
+      document.getElementById('modal-safety').classList.remove('hidden');
+    }
+    function closeSafetyModal() {
+      document.getElementById('modal-safety').classList.add('hidden');
+    }
+
+    function openDonorModal() {
+      document.getElementById('modal-donor-post').classList.remove('hidden');
+    }
+    function closeDonorModal() {
+      document.getElementById('modal-donor-post').classList.add('hidden');
+    }
+
+    async function openNotificationDrawer() {
+      if (AppState.backendConnected) {
+        try {
+          const res = await fetch(`${API_URL}/notifications`);
+          const json = await res.json();
+          if (json.success && json.data) {
+            AppState.notifications = json.data;
+          }
+        } catch (e) {}
+      }
+      document.getElementById('drawer-notifications').classList.remove('hidden');
+    }
+    function closeNotificationDrawer() {
+      document.getElementById('drawer-notifications').classList.add('hidden');
+    }
+
+    async function openProfileDrawer() {
+      if (AppState.backendConnected) {
+        try {
+          const res = await fetch(`${API_URL}/user/profile`);
+          const json = await res.json();
+          if (json.success && json.data) {
+            AppState.userProfile = json.data;
+          }
+        } catch (e) {}
+      }
+      document.getElementById('drawer-profile').classList.remove('hidden');
+    }
+    function closeProfileDrawer() {
+      document.getElementById('drawer-profile').classList.add('hidden');
+    }
+
+    function openAuthModal(type) {
+      document.getElementById('modal-auth').classList.remove('hidden');
+      document.getElementById('auth-modal-title').innerText = type === 'signup' ? 'Create Akshaya Account' : 'Sign In to Akshaya Patram';
+    }
+    function closeAuthModal() {
+      document.getElementById('modal-auth').classList.add('hidden');
+    }
+    function completeAuthentication() {
+      closeAuthModal();
+      showToast('Authentication successful! Welcome to Akshaya Patram.', '👋');
+      navigateTo('dashboard');
+    }
+
+    function openFilterModal() {
+      document.getElementById('modal-filter').classList.remove('hidden');
+    }
+    function closeFilterModal() {
+      document.getElementById('modal-filter').classList.add('hidden');
+    }
+    function applyAdvancedFilters() {
+      closeFilterModal();
+      showToast('Filters applied: Pure Veg, Nut-Free (< 5km radius)', '✅');
+      renderMapPins();
+    }
+
+    function openDonorReviews() {
+      showToast('Aisha Khan has 4.7★ across 28 verified surplus meal donations.', '⭐');
+    }
+
+    function shareMealListing() {
+      showToast('Meal details link copied to clipboard!', '📋');
+    }
+
+    function copyAddressToClipboard() {
+      showToast('Pickup address copied: 456, HSR Layout, Bengaluru', '📋');
+    }
+
+    // My Requests Drawer
+    async function openMyRequestsDrawer() {
+      const container = document.getElementById('my-requests-list');
+      container.innerHTML = '';
+
+      if (AppState.backendConnected) {
+        try {
+          const res = await fetch(`${API_URL}/orders`);
+          const json = await res.json();
+          if (json.success && json.data) {
+            AppState.myOrders = json.data;
+          }
+        } catch (e) {}
+      }
+
+      if (AppState.myOrders.length === 0) {
+        container.innerHTML = '<p class="text-slate-400 text-center py-4">No active meal reservations yet.</p>';
+      } else {
+        AppState.myOrders.forEach(o => {
+          const item = document.createElement('div');
+          item.className = 'p-3 rounded-2xl bg-slate-50 border border-slate-200 space-y-1';
+          item.innerHTML = `
+            <div class="flex justify-between items-center">
+              <span class="font-mono font-bold text-brand-orange">${o.orderId}</span>
+              <span class="px-2 py-0.5 rounded text-[9px] font-bold bg-emerald-100 text-emerald-800">${o.status}</span>
+            </div>
+            <p class="font-bold text-slate-800 text-xs">${o.mealTitle}</p>
+            <p class="text-[11px] text-slate-500">${o.portions} • ${o.address}</p>
+            <div class="pt-1 flex gap-2">
+              <button onclick="launchDirectionsMode(); closeMyRequestsDrawer();" class="px-2.5 py-1 rounded-lg bg-brand-teal text-white text-[10px] font-bold">Directions</button>
+              <button onclick="showToast('OTP for pickup verification: 4829', '🔑');" class="px-2.5 py-1 rounded-lg bg-slate-200 text-slate-800 text-[10px] font-bold">Show OTP</button>
+            </div>
+          `;
+          container.appendChild(item);
+        });
+      }
+
+      document.getElementById('drawer-requests').classList.remove('hidden');
+    }
+    function closeMyRequestsDrawer() {
+      document.getElementById('drawer-requests').classList.add('hidden');
+    }
+
+    // Publish New Surplus Food from Donor Modal (Persisted to Backend API)
+    async function publishNewDonationListing() {
+      const title = document.getElementById('post-meal-title').value || 'Fresh Hot Meal';
+      const portions = parseInt(document.getElementById('post-meal-portions').value) || 6;
+      const diet = document.getElementById('post-meal-diet').value;
+      const windowTime = document.getElementById('post-meal-window').value;
+      const address = document.getElementById('post-meal-address').value;
+
+      if (AppState.backendConnected) {
+        try {
+          const res = await fetch(`${API_URL}/meals`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              title,
+              portionsNum: portions,
+              dietary: diet,
+              pickupWindow: windowTime,
+              address
+            })
+          });
+          const json = await res.json();
+          if (json.success && json.data) {
+            AppState.listings.unshift(json.data);
+            closeDonorModal();
+            showToast(`Published "${title}" (${portions} meals) to database!`, '🎉');
+            navigateTo('dashboard');
+            syncWithBackend();
+            return;
+          }
+        } catch (e) {
+          console.warn('API post failed, using local store:', e);
+        }
+      }
+
+      // Local fallback
+      const newId = 'AP-' + (100 + AppState.listings.length + 1);
+      const newListing = {
+        id: newId,
+        title: title,
+        count: `${portions} Meals`,
+        portionsNum: portions,
+        servings: `${portions} Servings (Estimated ${Math.round(portions * 0.7)}kg)`,
+        dietary: diet,
+        pickupWindow: windowTime,
+        address: address,
+        distance: '1.5 km away',
+        donorName: 'Aisha Khan (Akshaya Kitchen)',
+        donorRating: '4.8',
+        donorAvatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=150&q=80',
+        image: 'https://images.unsplash.com/photo-1589302168068-964664d93dc0?auto=format&fit=crop&w=800&q=80',
+        pinX: 180 + Math.floor(Math.random() * 80) - 40,
+        pinY: 220 + Math.floor(Math.random() * 80) - 40,
+        color: 'orange',
+        clusterCount: 0,
+        status: 'available'
+      };
+
+      AppState.listings.unshift(newListing);
+      closeDonorModal();
+      showToast(`Published "${title}" (${portions} meals) on Akshaya Map!`, '🎉');
+      navigateTo('dashboard');
+    }
+
+    // Side-by-Side Gallery Mode Controller
+    function toggleSideBySide() {
+      const phoneFrame = document.getElementById('phone-frame');
+      const sideContainer = document.getElementById('sidebyside-container');
+      const toggleBtn = document.getElementById('btn-sidebyside');
+
+      AppState.isSideBySide = !AppState.isSideBySide;
+
+      if (AppState.isSideBySide) {
+        phoneFrame.classList.add('hidden');
+        sideContainer.classList.remove('hidden');
+        toggleBtn.innerText = 'Interactive Phone';
+        renderSideBySideCards();
+      } else {
+        phoneFrame.classList.remove('hidden');
+        sideContainer.classList.add('hidden');
+        toggleBtn.innerText = 'Side-by-Side';
+      }
+    }
+
+    function renderSideBySideCards() {
+      const container = document.getElementById('sidebyside-container');
+      container.innerHTML = `
+        <!-- Screen 1 Card -->
+        <div class="bg-slate-900 p-3 rounded-3xl border border-slate-800 flex flex-col items-center">
+          <div class="w-full flex justify-between items-center px-2 mb-2 text-xs font-bold text-slate-300">
+            <span>1. Onboarding</span>
+            <span class="text-brand-orange">Role Select</span>
+          </div>
+          <div class="w-[280px] h-[580px] rounded-[36px] overflow-hidden border-4 border-slate-950 shadow-2xl relative bg-white flex flex-col justify-between p-4 cursor-pointer" onclick="toggleSideBySide(); navigateTo('onboarding');">
+            <div class="flex flex-col items-center mt-6">
+              <div class="w-14 h-14 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center p-2">
+                <svg viewBox="0 0 64 64" class="w-10 h-10"><rect x="14" y="24" width="36" height="26" rx="6" fill="#D97706"/><rect x="16" y="26" width="32" height="22" rx="4" fill="#F59E0B"/><path d="M10 24C10 21 16 18 32 18C48 18 54 21 54 24H10Z" fill="#B45309"/><rect x="26" y="12" width="12" height="6" rx="3" fill="#D97706"/></svg>
+              </div>
+              <span class="text-[10px] font-bold text-slate-600 mt-1">Akshaya Patram</span>
+              <h3 class="text-sm font-extrabold text-slate-900 text-center mt-2">Welcome to<br>Akshaya Patram</h3>
+            </div>
+            <div class="space-y-3">
+              <div class="p-3 rounded-xl bg-gradient-to-r from-brand-orangeGradFrom to-brand-orangeGradTo text-white">
+                <p class="font-bold text-xs">I'm a DONOR</p>
+                <p class="text-[10px] opacity-90">Share surplus food from your home/kitchen.</p>
+              </div>
+              <div class="p-3 rounded-xl bg-gradient-to-r from-brand-tealGradFrom to-brand-tealGradTo text-white">
+                <p class="font-bold text-xs">I'm a RECIPIENT</p>
+                <p class="text-[10px] opacity-90">Find available meals for pickup.</p>
+              </div>
+            </div>
+            <div class="text-center pb-2">
+              <span class="text-xs font-bold underline">Sign In / Create Account</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Screen 2 Card -->
+        <div class="bg-slate-900 p-3 rounded-3xl border border-slate-800 flex flex-col items-center">
+          <div class="w-full flex justify-between items-center px-2 mb-2 text-xs font-bold text-slate-300">
+            <span>2. Home Dashboard</span>
+            <span class="text-teal-400">Map & Pins</span>
+          </div>
+          <div class="w-[280px] h-[580px] rounded-[36px] overflow-hidden border-4 border-slate-950 shadow-2xl relative bg-slate-100 flex flex-col justify-between cursor-pointer" onclick="toggleSideBySide(); navigateTo('dashboard');">
+            <div class="p-3 bg-white border-b border-slate-200">
+              <div class="bg-slate-100 p-2 rounded-xl text-[10px] text-slate-500 font-semibold">Search Location (e.g. HSR Layout)</div>
+              <div class="flex items-center justify-between mt-2">
+                <span class="px-2.5 py-0.5 rounded-full bg-slate-800 text-white text-[9px] font-bold">MAP VIEW</span>
+                <span class="text-[9px] font-bold text-slate-500">4 Active</span>
+              </div>
+            </div>
+            <div class="flex-1 relative bg-[#E8EEF3] p-2 flex items-center justify-center">
+              <div class="absolute top-20 left-10 bg-white p-1 rounded-lg shadow text-[9px] font-bold border border-slate-200">SURPLUS: 8 Meals</div>
+              <div class="absolute top-36 right-8 bg-white p-1 rounded-lg shadow text-[9px] font-bold border border-slate-200">SURPLUS: 12 Meals</div>
+              <div class="absolute bottom-16 left-12 bg-white p-1 rounded-lg shadow text-[9px] font-bold border border-slate-200">SURPLUS: 5 Meals</div>
+              <span class="absolute bottom-3 right-3 px-2.5 py-1 bg-brand-teal text-white rounded-full text-[9px] font-bold">Nearby</span>
+            </div>
+            <div class="h-12 bg-white border-t border-slate-200 px-4 flex items-center justify-between text-[9px] font-bold text-slate-600">
+              <span class="text-brand-orange">Home</span>
+              <span>Requests</span>
+              <span>Profile</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Screen 3 Card -->
+        <div class="bg-slate-900 p-3 rounded-3xl border border-slate-800 flex flex-col items-center">
+          <div class="w-full flex justify-between items-center px-2 mb-2 text-xs font-bold text-slate-300">
+            <span>3. Meal Details</span>
+            <span class="text-amber-400">Portions & Route</span>
+          </div>
+          <div class="w-[280px] h-[580px] rounded-[36px] overflow-hidden border-4 border-slate-950 shadow-2xl relative bg-white flex flex-col justify-between p-3.5 cursor-pointer" onclick="toggleSideBySide(); navigateTo('detail');">
+            <div class="space-y-2">
+              <div class="flex items-center justify-between text-xs font-bold text-slate-800 border-b pb-1">
+                <span>&larr; Meal Details</span>
+                <span class="text-amber-600">4.7 ★</span>
+              </div>
+              <div class="h-28 rounded-xl bg-slate-200 overflow-hidden">
+                <img src="https://images.unsplash.com/photo-1546833999-b9f581a1996d?auto=format&fit=crop&w=400&q=80" class="w-full h-full object-cover">
+              </div>
+              <h4 class="font-extrabold text-xs text-slate-900">8 Meals - Vegetable Rice & Lentils</h4>
+              <div class="bg-slate-50 p-2 rounded-lg text-[9px] space-y-0.5 text-slate-700">
+                <p><strong>Quantity:</strong> 8 Servings (6kg)</p>
+                <p><strong>Dietary:</strong> Veg, Nut-Free, Low Spice</p>
+                <p><strong>Pickup:</strong> 2:00 PM - 5:00 PM Today</p>
+                <p><strong>Address:</strong> 456, HSR Layout</p>
+              </div>
+            </div>
+            <div class="grid grid-cols-2 gap-2 pt-2 border-t">
+              <button class="py-2 rounded-full bg-brand-teal text-white text-[9px] font-bold">Directions</button>
+              <button class="py-2 rounded-full bg-brand-orange text-white text-[9px] font-bold">Accept</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Screen 4 Card -->
+        <div class="bg-slate-900 p-3 rounded-3xl border border-slate-800 flex flex-col items-center">
+          <div class="w-full flex justify-between items-center px-2 mb-2 text-xs font-bold text-slate-300">
+            <span>4. Confirmation</span>
+            <span class="text-emerald-400">Inventory Sync</span>
+          </div>
+          <div class="w-[280px] h-[580px] rounded-[36px] overflow-hidden border-4 border-slate-950 shadow-2xl relative bg-white flex flex-col justify-between p-3.5 cursor-pointer" onclick="toggleSideBySide(); navigateTo('confirmation');">
+            <div class="space-y-2 text-center mt-2">
+              <div class="w-10 h-10 rounded-full bg-emerald-100 text-emerald-600 mx-auto flex items-center justify-center font-bold">✓</div>
+              <h4 class="font-extrabold text-xs text-slate-900">Pickup Confirmed!</h4>
+              <div class="bg-slate-100 p-2 rounded-xl text-left text-[9px] space-y-1">
+                <p><strong>Order ID:</strong> #AP987654</p>
+                <p><strong>Item:</strong> Vegetable Rice & Lentils</p>
+                <p class="text-emerald-700 font-bold">✓ Inventory Updated</p>
+              </div>
+              <div class="text-left pt-2 border-t text-[9px]">
+                <p class="font-bold">Rate Akshaya Kitchen</p>
+                <div class="text-amber-400 text-sm tracking-widest my-1">★★★★★</div>
+                <input type="text" placeholder="Write feedback..." class="w-full p-1 bg-slate-50 border rounded text-[9px]">
+              </div>
+            </div>
+            <button class="w-full py-2 rounded-full bg-brand-teal text-white text-[9px] font-bold">Submit & Finish</button>
+          </div>
+        </div>
+      `;
+    }
+
+    // Initial Bootstrap
+    window.addEventListener('DOMContentLoaded', () => {
+      renderMapPins();
+      renderListCards();
+      syncWithBackend();
+    });
+  </script>
+</body>
+</html>

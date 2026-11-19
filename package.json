@@ -1,0 +1,25 @@
+{
+  "name": "akshaya",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js",
+    "run": "npm --prefix mobile start",
+    "run-android": "npm --prefix mobile run android",
+    "mobile": "npm --prefix mobile start",
+    "mobile:android": "npm --prefix mobile run android"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "cors": "^2.8.6",
+    "express": "^5.3.0"
+  },
+  "devDependencies": {
+    "@react-native-community/cli": "^21.0.0"
+  }
+}
